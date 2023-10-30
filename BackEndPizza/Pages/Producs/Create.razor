@@ -1,0 +1,36 @@
+﻿@page "/producs/create"
+@inject IProducsData producs
+<PageTitle>Create</PageTitle>
+<h3>Create</h3>
+<EditForm Model="@Model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="d-flex flex-column">
+        <MudTextField @bind-Value="@Model.Name" For="@(() => Model.Name)" Label="Name" InputType="InputType.Text" Variant="Variant.Outlined"></MudTextField>
+        <MudTextField @bind-Value="@Model.Price" For="@(() => Model.Price)" Label="Amount" Format="F1" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" />
+        <MudTextField T="string" Label="Outlined" Variant="Variant.Outlined" InputType="InputType.Text" Text="@Model!.Description" For="@(() => Model.Description)" Lines="1" />
+    </div>
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Secondary" Size="Size.Large">Save</MudButton>
+</EditForm>
+@code {
+    public BackEndPizza.Models.Tables.Producs? Model { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new()
+        {
+                Name = "Name",
+                Description = "",
+                Price = 0.0M,
+        };
+    }
+
+    public void OnValidSubmit(EditContext context)
+    {
+        if (!context.Validate())
+        {
+            return;
+        }
+        producs.Add(Model);
+    }
+}
+

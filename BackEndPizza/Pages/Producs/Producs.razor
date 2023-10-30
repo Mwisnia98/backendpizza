@@ -1,0 +1,30 @@
+﻿@page "/producs"
+@using BackEndPizza.Data.ProducsService;
+@using BackEndPizza.Models.Tables;
+@inject IProducsData data;
+
+<PageTitle>Producs</PageTitle>
+<div>
+    <MudTable Items="@Elements.Take(4)" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Price</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Price">@context.Price</MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <MudSwitch @bind-Checked="_hidePosition">Hide <b>position</b> when Breakpoint=Xs</MudSwitch>
+    <MudSwitch @bind-Checked="_loading">Show Loading</MudSwitch>
+</div>
+@code {
+    private bool _hidePosition;
+    private bool _loading;
+    private List<BackEndPizza.Models.Tables.Producs> Elements = new();
+    protected override async Task OnInitializedAsync()
+    {
+        Elements = data.GetProducs().ToList();
+    }
+}
