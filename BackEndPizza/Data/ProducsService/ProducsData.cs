@@ -12,6 +12,6 @@ namespace BackEndPizza.Data.ProducsService;
             _dbContext = dbContext;
         }
 
-        public Producs[] GetProducs() =>_dbContext.Producs.ToArray();
+        public IEnumerable<Producs> GetProducs() =>_dbContext.Producs;
     }
 

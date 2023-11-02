@@ -10,20 +10,20 @@ namespace BackEndPizza.Helpers.Interfaces
         {
             _dbContext = dbContext;
         }
-        public virtual void Add(T item)
+        public virtual bool Add(T item)
         {
             _dbContext.Add(item);
-            _dbContext.SaveChanges();
+            return _dbContext.SaveChanges() == 1;
         }
-        public void Update(T item)
+        public virtual bool Update(T item)
         {
             _dbContext.Update(item);
-            _dbContext.SaveChanges();
+            return _dbContext.SaveChanges() == 1;
         }
-        public void Delete(T item)
+        public virtual bool Delete(T item)
         {
             _dbContext.Update(item);
-            _dbContext.SaveChanges();
+            return _dbContext.SaveChanges() == 1;
         }
     }
 }

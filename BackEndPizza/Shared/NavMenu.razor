@@ -5,14 +5,14 @@
         <MudText Typo="Typo.body2" Class="px-4 mud-text-secondary">M.Wiśniowski</MudText>
         <MudDivider Class="my-2" />
         <MudNavLink Href="/">Dashboard</MudNavLink>
-        <AuthorizeView>
-            <Authorized>
+        @* <AuthorizeView>
+            <Authorized> *@
                 <MudNavGroup Title="Producs" Expanded="false">
                     <MudNavLink Href="/producs">List</MudNavLink>
                     <MudNavLink Href="/producs/create">Create</MudNavLink>
                 </MudNavGroup>
-            </Authorized>
-        </AuthorizeView>
+            @* </Authorized>
+        </AuthorizeView> *@
     </MudNavMenu>
 </MudPaper>
 @code {

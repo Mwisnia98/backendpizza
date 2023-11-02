@@ -1,36 +1,49 @@
 ﻿@page "/producs/create"
 @inject IProducsData producs
+@inject ISnackbar Snackbar
+
 <PageTitle>Create</PageTitle>
-<h3>Create</h3>
-<EditForm Model="@Model" OnValidSubmit="OnValidSubmit">
-    <DataAnnotationsValidator />
-    <div class="d-flex flex-column">
-        <MudTextField @bind-Value="@Model.Name" For="@(() => Model.Name)" Label="Name" InputType="InputType.Text" Variant="Variant.Outlined"></MudTextField>
-        <MudTextField @bind-Value="@Model.Price" For="@(() => Model.Price)" Label="Amount" Format="F1" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" />
-        <MudTextField T="string" Label="Outlined" Variant="Variant.Outlined" InputType="InputType.Text" Text="@Model!.Description" For="@(() => Model.Description)" Lines="1" />
-    </div>
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Secondary" Size="Size.Large">Save</MudButton>
-</EditForm>
+
+    <h3>Create new product</h3>
+
+    <EditForm Model="@Model" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <div class="d-flex flex-column">
+            <MudTextField @bind-Value="@Model.Name" For="@(() => Model.Name)" Label="Name" InputType="InputType.Text" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField @bind-Value="@Model.Price" For="@(() => Model.Price)" Label="Amount" Format="F1" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" />
+            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" InputType="InputType.Text" Text="@Model!.Description" For="@(() => Model.Description)" Lines="1" />
+        </div>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Secondary" Size="Size.Large">Save</MudButton>
+    </EditForm>
 @code {
     public BackEndPizza.Models.Tables.Producs? Model { get; set; }
 
     protected override void OnInitialized()
     {
-        Model ??= new()
+        Model = new()
         {
                 Name = "Name",
                 Description = "",
                 Price = 0.0M,
         };
     }
-
+    // to do snack na interface
     public void OnValidSubmit(EditContext context)
     {
         if (!context.Validate())
         {
             return;
         }
-        producs.Add(Model);
+        var result = producs.Add(Model);
+        ChangeSnack( (result ? "Success " : "Error ") + Model.Name, Variant.Filled, result ? Severity.Success : Severity.Error);
+        OnInitialized();
+    }
+    private void ChangeSnack(string message, Variant variant, Severity severity)
+    {
+        Snackbar.Add(message, severity, configure => {
+            configure.SnackbarVariant = variant;
+            configure.VisibleStateDuration = 3000;
+        });
     }
 }
 

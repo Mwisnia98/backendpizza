@@ -5,17 +5,33 @@
 <MudThemeProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
-<div class="page">
-    <NavMenu />
 
-    <main>
-        <div class="top-row px-4 auth">
-            <LoginDisplay />
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <LoginDisplay />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+        
+        <NavMenu />
+
+        @*NavMenu*@
+    </MudDrawer>
+    <MudMainContent>
+        <MudPaper Class="pa-16 ma-2" Elevation="3">
+        @Body
+        </MudPaper>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    public bool _drawerOpen {get; set;}= true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
+

@@ -5,7 +5,7 @@
 
 <PageTitle>Producs</PageTitle>
 <div>
-    <MudTable Items="@Elements.Take(4)" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+    <MudTable Items="@Elements" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" FixedHeader="true" Height="400px" >
         <HeaderContent>
             <MudTh>Name</MudTh>
             <MudTh>Price</MudTh>
@@ -14,17 +14,21 @@
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Price">@context.Price</MudTd>
         </RowTemplate>
+        <PagerContent>
+        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100, int.MaxValue }" InfoFormat="@($"End {infoFormat}")" HorizontalAlignment="HorizontalAlignment.End" />
+    </PagerContent>
     </MudTable>
-
-    <MudSwitch @bind-Checked="_hidePosition">Hide <b>position</b> when Breakpoint=Xs</MudSwitch>
-    <MudSwitch @bind-Checked="_loading">Show Loading</MudSwitch>
+    
 </div>
 @code {
     private bool _hidePosition;
     private bool _loading;
-    private List<BackEndPizza.Models.Tables.Producs> Elements = new();
+    private string infoFormat = "{first_item}-{last_item} of {all_items}";
+    private IEnumerable<BackEndPizza.Models.Tables.Producs> Elements = new List<BackEndPizza.Models.Tables.Producs>();
     protected override async Task OnInitializedAsync()
     {
-        Elements = data.GetProducs().ToList();
+        _loading = true;
+        Elements = data.GetProducs();
+        _loading = false;
     }
 }

@@ -5,6 +5,6 @@ namespace BackEndPizza.Data.ProducsService
 {
     public interface IProducsData : IAbstractCrud<Producs>
     {
-        Producs[] GetProducs();
+        IEnumerable<Producs> GetProducs();
     }
 }
