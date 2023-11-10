@@ -1,18 +1,16 @@
-﻿@page "/producs"
-@using BackEndPizza.Data.ProducsService;
-@using BackEndPizza.Models.Tables;
-@inject IProducsData data;
+﻿@page "/categoryProducts"
+@using BackEndPizza.Data.CategoryProductsService;
+@inject ICategoryProductsService data;
 @inject IDialogService DialogService;
 @inject ISnackbar Snackbar
-@inject IValidator<BackEndPizza.Models.Tables.Producs> validator
-<PageTitle>Producs</PageTitle>
+<PageTitle>Category products</PageTitle>
 <div>
 
     <MudTable Items="@Elements" Dense="true" Hover="true" CanCancelEdit="true" 
           @bind-SelectedItem="selectedItem" CommitEditTooltip="Commit Edit" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
           RowEditCommit="ItemHasBeenCommitted" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="TableEditTrigger.EditButton"
     @ref="table"
-              ServerData="@(new Func<TableState, Task<TableData<BackEndPizza.Models.Tables.Producs>>>(ServerReload))">
+              ServerData="@(new Func<TableState, Task<TableData<BackEndPizza.Models.Tables.CategoryProducts>>>(ServerReload))">
         <ToolBarContent>
             <MudText Typo="Typo.h6">Producs</MudText>
             <MudSpacer />
@@ -33,18 +31,15 @@
         }
     </ColGroup>
         <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Price</MudTh>
+            <MudTh>Category Name</MudTh>
         </HeaderContent>
     <RowTemplate>
-            <MudTd DataLabel="Name">@context.Name</MudTd>
-            <MudTd DataLabel="Price">@context.Price</MudTd>
+            <MudTd DataLabel="Category Name">@context.CategoryName</MudTd>
     </RowTemplate>
     <RowEditingTemplate>
-            <MudTd DataLabel="Name">
-                <MudTextField @bind-Value="@context.Name" Required />
+            <MudTd DataLabel="Category Name">
+                <MudTextField @bind-Value="@context.CategoryName" Required />
              </MudTd>
-             <MudTd DataLabel="Price"><MudNumericField @bind-Value="@context.Price" Required /></MudTd>
     </RowEditingTemplate>
     <PagerContent>
         <MudTablePager />
@@ -60,32 +55,24 @@
     private bool _loading;
     private string infoFormat = "{first_item}-{last_item} of {all_items}";
     private string searchString = null;
-    private MudTable<BackEndPizza.Models.Tables.Producs> table;
-    private IEnumerable<BackEndPizza.Models.Tables.Producs> Elements = new List<BackEndPizza.Models.Tables.Producs>();
+    private MudTable<BackEndPizza.Models.Tables.CategoryProducts> table;
+    private IEnumerable<BackEndPizza.Models.Tables.CategoryProducts> Elements = new List<BackEndPizza.Models.Tables.CategoryProducts>();
     private int totalItems;
-    private HashSet<BackEndPizza.Models.Tables.Producs> selectedItems = new HashSet<BackEndPizza.Models.Tables.Producs>();
+    private HashSet<BackEndPizza.Models.Tables.CategoryProducts> selectedItems = new HashSet<BackEndPizza.Models.Tables.CategoryProducts>();
 
     private List<string> editEvents = new();
-    private BackEndPizza.Models.Tables.Producs elementBeforeEdit;
-    private BackEndPizza.Models.Tables.Producs selectedItem = null;
+    private BackEndPizza.Models.Tables.CategoryProducts elementBeforeEdit;
+    private BackEndPizza.Models.Tables.CategoryProducts selectedItem = null;
     private TableApplyButtonPosition applyButtonPosition = TableApplyButtonPosition.End;
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
 
-    private async Task<TableData<BackEndPizza.Models.Tables.Producs>> ServerReload(TableState state)
+    private async Task<TableData<BackEndPizza.Models.Tables.CategoryProducts>> ServerReload(TableState state)
     {
-        var products = data.GetProducs();
-        products = products.Where(element =>
-        {
-            if (string.IsNullOrWhiteSpace(searchString))
-                return true;
-            if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            return false;
-        }).ToArray();
-        totalItems = products.Count();
-        Elements = products.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
-        return new TableData<BackEndPizza.Models.Tables.Producs>() { TotalItems = totalItems, Items = Elements };
+        var categoryProducts = data.GetItems().Where(z => !string.IsNullOrWhiteSpace(searchString) && z.CategoryName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+        totalItems = categoryProducts.Count();
+        Elements = categoryProducts.Skip(state.Page * state.PageSize).Take(state.PageSize).AsEnumerable();
+        return new TableData<BackEndPizza.Models.Tables.CategoryProducts>() { TotalItems = totalItems, Items = Elements };
     }
     private void OnSearch(string text)
     {
@@ -94,7 +81,7 @@
     }
 
 
-    private async void OnButtonClicked(Models.Tables.Producs producs)
+    private async void OnButtonClicked(Models.Tables.CategoryProducts producs)
     {
         bool result = await DialogService.ShowMessageBox(
             "Warning",
@@ -103,7 +90,7 @@
         if(result)
         {
             var success = data.Delete(producs);
-            ChangeSnack((result ? "Success " : "Error ") + producs.Name, Variant.Filled, result ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+            ChangeSnack((result ? "Success " : "Error ") + producs.CategoryName, Variant.Filled, result ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
             await table.ReloadServerData();
         }
 
@@ -122,19 +109,15 @@
     {
         elementBeforeEdit = new()
             {
-                Name = ((Models.Tables.Producs)element).Name,
-                Key = ((Models.Tables.Producs)element).Key,
-                Description = ((Models.Tables.Producs)element).Description,
-                Price = ((Models.Tables.Producs)element).Price,
+                Id = ((Models.Tables.CategoryProducts)element).Id,
+                CategoryName = ((Models.Tables.CategoryProducts)element).CategoryName,
             };
     }
 
     private void ResetItemToOriginalValues(object element)
     {
-        ((Models.Tables.Producs)element).Name = elementBeforeEdit.Name;
-        ((Models.Tables.Producs)element).Key = elementBeforeEdit.Key;
-        ((Models.Tables.Producs)element).Description = elementBeforeEdit.Description;
-        ((Models.Tables.Producs)element).Price = elementBeforeEdit.Price;
+        ((Models.Tables.CategoryProducts)element).Id = elementBeforeEdit.Id;
+        ((Models.Tables.CategoryProducts)element).CategoryName = elementBeforeEdit.CategoryName;
     }
     // to logger
     private void ItemHasBeenCommitted(object element)
@@ -149,5 +132,4 @@
         var resulted = data.Update((Models.Tables.Producs)element);
         ChangeSnack((resulted ? "Success " : "Error ") + ((Models.Tables.Producs)element).Name, Variant.Filled, resulted ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
     }
-
 }

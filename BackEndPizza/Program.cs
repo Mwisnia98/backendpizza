@@ -2,6 +2,8 @@ using BackEndPizza.Areas.Identity;
 using BackEndPizza.Data;
 using BackEndPizza.Data.ProducsService;
 using BackEndPizza.Helpers.Interfaces;
+using FluentValidation.AspNetCore;
+using FluentValidation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -9,14 +11,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using System.Reflection;
+using BackEndPizza.Data.CategoryProductsService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    // options.UseSqlServer(connectionString));
-     options.UseInMemoryDatabase("InMemoryDb"));
+    options.UseSqlServer(connectionString));
+    // options.UseInMemoryDatabase("InMemoryDb"));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -24,8 +28,14 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddSingleton<WeatherForecastService>();
+
 builder.Services.AddScoped<IProducsData, ProducsData>();
+builder.Services.AddScoped<ICategoryProductsService, CategoryProductsService>();
+
 builder.Services.AddMudServices();
+builder.Services.AddFluentValidationAutoValidation();
+
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

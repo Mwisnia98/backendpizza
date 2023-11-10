@@ -35,10 +35,10 @@
             return;
         }
         var result = producs.Add(Model);
-        ChangeSnack( (result ? "Success " : "Error ") + Model.Name, Variant.Filled, result ? Severity.Success : Severity.Error);
+        ChangeSnack( (result ? "Success " : "Error ") + Model.Name, Variant.Filled, result ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
         OnInitialized();
     }
-    private void ChangeSnack(string message, Variant variant, Severity severity)
+    private void ChangeSnack(string message, Variant variant, MudBlazor.Severity severity)
     {
         Snackbar.Add(message, severity, configure => {
             configure.SnackbarVariant = variant;

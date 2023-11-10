@@ -14,5 +14,9 @@ namespace BackEndPizza.Models.Tables
         [Required]
         [Range(0.1, double.MaxValue, ErrorMessage = "Please enter a value bigger than {1}")]
         public decimal Price { get; set; }
+        public bool MainProduct { get; set; } = false;
+        public int? CategoryProductId { get; set; }
+        [ForeignKey(nameof(CategoryProductId))]
+        public virtual CategoryProducts CategoryProducts { get; set; }
     }
 }

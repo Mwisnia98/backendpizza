@@ -5,5 +5,6 @@
         bool Add(T item);
         bool Update(T item);
         bool Delete(T item);
+        IQueryable<T> GetItems();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace BackEndPizza.Helpers.Interfaces
 {
-    public abstract class AbstractCrud<T>: IAbstractCrud<T>
+    public abstract class AbstractCrud<T>: IAbstractCrud<T> where T : class
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -22,8 +22,12 @@ namespace BackEndPizza.Helpers.Interfaces
         }
         public virtual bool Delete(T item)
         {
-            _dbContext.Update(item);
+            _dbContext.Remove(item);
             return _dbContext.SaveChanges() == 1;
+        }
+        public virtual IQueryable<T> GetItems()
+        {
+            return _dbContext.Set<T>().AsQueryable();
         }
     }
 }
