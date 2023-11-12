@@ -1,0 +1,18 @@
+<MudDialog>
+    <DialogContent>
+        <MudText>Add new category</MudText>
+        <MudTextField @bind-Value="@Name" For="@(() => Name)" Label="Name" InputType="InputType.Text" Variant="Variant.Outlined"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    public string Name {get;set; } = "";
+    public void Submit() => MudDialog.Close(DialogResult.Ok(Name));
+    void Cancel() => MudDialog.Cancel();
+}

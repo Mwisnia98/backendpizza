@@ -1,0 +1,62 @@
+
+@inject IValidator<BackEndPizza.Models.Tables.Producs> validator;
+@inject ISnackbar Snackbar
+@inject IProducsData data;
+@inject ICategoryProductsService _categoryProductsService;
+<MudDialog>
+    <DialogContent>
+        <MudText>Add new category</MudText>
+            <MudTextField @bind-Value="@Model.Name" For="@(() => Model.Name)" Label="Name" InputType="InputType.Text" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField @bind-Value="@Model.Price" For="@(() => Model.Price)" Label="Amount" Format="F1" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" />
+            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" InputType="InputType.Text" Text="@Model!.Description" For="@(() => Model.Description)" Lines="1" />
+            <MudSelect T="int" Label="Category" AnchorOrigin="Origin.BottomCenter" @bind-Value="CatId" Variant="Variant.Outlined">
+                    @foreach(var cat in CategoryProducts)
+                    {
+                        <MudSelectItem Value="@(cat.Id)">@cat.CategoryName</MudSelectItem>
+                    }
+                </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    private IEnumerable<CategoryProducts> CategoryProducts;
+    
+    private BackEndPizza.Models.Tables.Producs? Model = new()
+    {
+            Name = "Name",
+            Description = "",
+            Price = 0.0M,
+            CategoryProductId = null
+    };
+    private int CatId {get;set;} = -1;
+    protected override void OnInitialized()
+    {
+        CategoryProducts = _categoryProductsService.GetItems();
+    }
+    public void Submit() {
+        var result = validator.Validate(Model);
+        if (!result.IsValid)
+        {
+            Snackbar.Add("Not validate product", MudBlazor.Severity.Error, configure =>
+            {
+                configure.SnackbarVariant =  Variant.Filled;
+                configure.VisibleStateDuration = 3000;
+            });
+            return;
+        }
+        Model.CategoryProductId = CatId == -1 ? null : CatId;
+        var resultSave = data.Add(Model);
+        Snackbar.Add(resultSave ? "Success" : "Error", resultSave ? MudBlazor.Severity.Success : MudBlazor.Severity.Error, configure =>
+            {
+                configure.SnackbarVariant =  Variant.Filled;
+                configure.VisibleStateDuration = 3000;
+            });
+        MudDialog.Close(DialogResult.Ok(resultSave));
+    }
+    void Cancel() => MudDialog.Cancel();
+}

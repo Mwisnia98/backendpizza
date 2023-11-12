@@ -1,16 +1,15 @@
 ﻿@page "/producs"
-@using BackEndPizza.Data.ProducsService;
-@using BackEndPizza.Models.Tables;
 @inject IProducsData data;
+@inject ICategoryProductsService CategoryProductsService
 @inject IDialogService DialogService;
 @inject ISnackbar Snackbar
 @inject IValidator<BackEndPizza.Models.Tables.Producs> validator
 <PageTitle>Producs</PageTitle>
 <div>
-
+    <MudButton @onclick="CreateCategory" Variant="Variant.Filled" Color="Color.Success">Add Category</MudButton>
     <MudTable Items="@Elements" Dense="true" Hover="true" CanCancelEdit="true" 
           @bind-SelectedItem="selectedItem" CommitEditTooltip="Commit Edit" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
-          RowEditCommit="ItemHasBeenCommitted" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="TableEditTrigger.EditButton"
+          RowEditCommit="ItemHasBeenCommitted" ApplyBauttonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="TableEditTrigger.EditButton"
     @ref="table"
               ServerData="@(new Func<TableState, Task<TableData<BackEndPizza.Models.Tables.Producs>>>(ServerReload))">
         <ToolBarContent>
@@ -35,16 +34,26 @@
         <HeaderContent>
             <MudTh>Name</MudTh>
             <MudTh>Price</MudTh>
+            <MudTh>Category</MudTh>
         </HeaderContent>
     <RowTemplate>
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Price">@context.Price</MudTd>
+            <MudTd DataLabel="Category">@context.CategoryProducts?.CategoryName</MudTd>
     </RowTemplate>
     <RowEditingTemplate>
             <MudTd DataLabel="Name">
                 <MudTextField @bind-Value="@context.Name" Required />
              </MudTd>
              <MudTd DataLabel="Price"><MudNumericField @bind-Value="@context.Price" Required /></MudTd>
+             <MudTd DataLabel="Category">
+                <MudSelect T="int" Label="Category" AnchorOrigin="Origin.BottomCenter" @bind-Value="catId">
+                    @foreach(var cat in CategoryProducts)
+                    {
+                        <MudSelectItem Value="@(cat.Id)">@cat.CategoryName</MudSelectItem>
+                    }
+                </MudSelect>
+             </MudTd>
     </RowEditingTemplate>
     <PagerContent>
         <MudTablePager />
@@ -72,17 +81,12 @@
     private TableEditButtonPosition editButtonPosition = TableEditButtonPosition.End;
     private TableEditTrigger editTrigger = TableEditTrigger.RowClick;
 
+    private IEnumerable<BackEndPizza.Models.Tables.CategoryProducts> CategoryProducts;
+    private int catId = -1;
+
     private async Task<TableData<BackEndPizza.Models.Tables.Producs>> ServerReload(TableState state)
     {
-        var products = data.GetProducs();
-        products = products.Where(element =>
-        {
-            if (string.IsNullOrWhiteSpace(searchString))
-                return true;
-            if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-                return true;
-            return false;
-        }).ToArray();
+        var products = data.GetItems().Include(z => z.CategoryProducts).Where(z => !string.IsNullOrWhiteSpace(z.Name) || z.Name.Contains(searchString ?? "", StringComparison.OrdinalIgnoreCase) );
         totalItems = products.Count();
         Elements = products.Skip(state.Page * state.PageSize).Take(state.PageSize).ToArray();
         return new TableData<BackEndPizza.Models.Tables.Producs>() { TotalItems = totalItems, Items = Elements };
@@ -126,7 +130,9 @@
                 Key = ((Models.Tables.Producs)element).Key,
                 Description = ((Models.Tables.Producs)element).Description,
                 Price = ((Models.Tables.Producs)element).Price,
+                CategoryProductId = ((Models.Tables.Producs)element).CategoryProductId,
             };
+        CategoryProducts = CategoryProductsService.GetItems();
     }
 
     private void ResetItemToOriginalValues(object element)
@@ -135,19 +141,31 @@
         ((Models.Tables.Producs)element).Key = elementBeforeEdit.Key;
         ((Models.Tables.Producs)element).Description = elementBeforeEdit.Description;
         ((Models.Tables.Producs)element).Price = elementBeforeEdit.Price;
+        ((Models.Tables.Producs)element).CategoryProductId = elementBeforeEdit.CategoryProductId;
     }
     // to logger
-    private void ItemHasBeenCommitted(object element)
+    private async void ItemHasBeenCommitted(object element)
     {
         var result = validator.Validate((Models.Tables.Producs)element);
+
+        Console.WriteLine(((Models.Tables.Producs)element).CategoryProductId);
         if (!result.IsValid)
         {
             ChangeSnack("Not validate product", Variant.Filled, MudBlazor.Severity.Error);
             return;
         }
-
+        ((Models.Tables.Producs)element).CategoryProductId = catId == -1 ? null : catId;
         var resulted = data.Update((Models.Tables.Producs)element);
         ChangeSnack((resulted ? "Success " : "Error ") + ((Models.Tables.Producs)element).Name, Variant.Filled, resulted ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+        await table.ReloadServerData();
+    }
+
+    private async Task CreateCategory()
+    {
+        var resultName = await DialogService.Show<CreateDialogProducts>().Result;
+        if(resultName.Cancelled)
+            return;
+        await table.ReloadServerData();
     }
 
 }

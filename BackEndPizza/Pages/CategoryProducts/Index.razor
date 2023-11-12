@@ -1,11 +1,13 @@
-﻿@page "/categoryProducts"
+﻿@page "/productsCategory"
 @using BackEndPizza.Data.CategoryProductsService;
 @inject ICategoryProductsService data;
 @inject IDialogService DialogService;
-@inject ISnackbar Snackbar
+@inject ISnackbar Snackbar;
+@inject IDialogService DialogService;
+
 <PageTitle>Category products</PageTitle>
 <div>
-
+    <MudButton @onclick="Confirm" Variant="Variant.Filled" Color="Color.Success">Add Category</MudButton>
     <MudTable Items="@Elements" Dense="true" Hover="true" CanCancelEdit="true" 
           @bind-SelectedItem="selectedItem" CommitEditTooltip="Commit Edit" RowEditPreview="BackupItem" RowEditCancel="ResetItemToOriginalValues"
           RowEditCommit="ItemHasBeenCommitted" ApplyButtonPosition="@applyButtonPosition" EditButtonPosition="@editButtonPosition" EditTrigger="TableEditTrigger.EditButton"
@@ -69,7 +71,7 @@
 
     private async Task<TableData<BackEndPizza.Models.Tables.CategoryProducts>> ServerReload(TableState state)
     {
-        var categoryProducts = data.GetItems().Where(z => !string.IsNullOrWhiteSpace(searchString) && z.CategoryName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+        var categoryProducts = data.GetItems().Where(z => !string.IsNullOrWhiteSpace(z.CategoryName) && z.CategoryName.Contains(searchString ?? "", StringComparison.OrdinalIgnoreCase));
         totalItems = categoryProducts.Count();
         Elements = categoryProducts.Skip(state.Page * state.PageSize).Take(state.PageSize).AsEnumerable();
         return new TableData<BackEndPizza.Models.Tables.CategoryProducts>() { TotalItems = totalItems, Items = Elements };
@@ -122,14 +124,28 @@
     // to logger
     private void ItemHasBeenCommitted(object element)
     {
-        var result = validator.Validate((Models.Tables.Producs)element);
-        if (!result.IsValid)
+        var el = (Models.Tables.CategoryProducts)element;
+        if (string.IsNullOrEmpty(el.CategoryName))
         {
             ChangeSnack("Not validate product", Variant.Filled, MudBlazor.Severity.Error);
             return;
         }
+        var resulted = data.Update(el);
+        ChangeSnack((resulted ? "Success " : "Error ") + el.CategoryName, Variant.Filled, resulted ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+    }
 
-        var resulted = data.Update((Models.Tables.Producs)element);
-        ChangeSnack((resulted ? "Success " : "Error ") + ((Models.Tables.Producs)element).Name, Variant.Filled, resulted ? MudBlazor.Severity.Success : MudBlazor.Severity.Error);
+    private async Task Confirm()
+    {
+        var resultName = await DialogService.Show<CreateDialog>().Result;
+        if(resultName.Cancelled)
+            return;
+        var result = data.Add(new() {
+            CategoryName = (string)resultName.Data
+        });
+        Snackbar.Add((result ? "Success " : "Error ") + (string)(resultName.Data), result ? MudBlazor.Severity.Success : MudBlazor.Severity.Error, configure => {
+            configure.SnackbarVariant = Variant.Filled;
+            configure.VisibleStateDuration = 3000;
+        });
+        await table.ReloadServerData();
     }
 }
