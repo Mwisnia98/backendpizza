@@ -11,5 +11,7 @@ namespace BackEndPizza.Data
         }
 
         public DbSet<Producs> Producs { get; set; }
+        public DbSet<CategoryProducts> CategoryProducts { get; set; }
+
     }
 }

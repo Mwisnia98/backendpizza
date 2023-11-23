@@ -71,7 +71,7 @@
 
     private async Task<TableData<BackEndPizza.Models.Tables.CategoryProducts>> ServerReload(TableState state)
     {
-        var categoryProducts = data.GetItems().Where(z => !string.IsNullOrWhiteSpace(z.CategoryName) && z.CategoryName.Contains(searchString ?? "", StringComparison.OrdinalIgnoreCase));
+        var categoryProducts = data.GetItems().ToList().Where(z => !string.IsNullOrWhiteSpace(z.CategoryName) && z.CategoryName.Contains(searchString ?? "", StringComparison.OrdinalIgnoreCase));
         totalItems = categoryProducts.Count();
         Elements = categoryProducts.Skip(state.Page * state.PageSize).Take(state.PageSize).AsEnumerable();
         return new TableData<BackEndPizza.Models.Tables.CategoryProducts>() { TotalItems = totalItems, Items = Elements };
