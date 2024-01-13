@@ -1,0 +1,16 @@
+<mat-toolbar class="toolbar">
+  <div class="container">
+    <div></div>
+    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="menu">
+      <mat-icon>person_pin</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" xPosition="before">
+      <a [routerLink]="['/Login']">
+      <button mat-menu-item >
+        <span>Login</span>
+      </button>
+      </a>
+      <button mat-menu-item>Item 2</button>
+    </mat-menu>
+  </div>
+</mat-toolbar>
